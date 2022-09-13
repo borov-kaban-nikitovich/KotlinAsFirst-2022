@@ -20,7 +20,8 @@ fun pointInsideCircle(x: Double, y: Double, x0: Double, y0: Double, r: Double) =
  * Четырехзначное число назовем счастливым, если сумма первых двух ее цифр равна сумме двух последних.
  * Определить, счастливое ли заданное число, вернуть true, если это так.
  */
-fun isNumberHappy(number: Int): Boolean = number / 1000 + number / 100 % 10 == number / 10 % 10 + number % 10
+fun isNumberHappy(number: Int): Boolean =
+    number / 1000 + number / 100 % 10 == number / 10 % 10 + number % 10
 
 /**
  * Простая (2 балла)
@@ -42,14 +43,11 @@ fun queenThreatens(x1: Int, y1: Int, x2: Int, y2: Int): Boolean =
 fun daysInMonth(month: Int, year: Int): Int {
     // Если февраль
     if (month == 2) {
-        val isLeap = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0) // Високосный ли год?
+        val isLeap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0 // Високосный ли год?
         return if (isLeap) 29 else 28
     }
     // Если не февраль
-    if (month <= 7)
-        return if (month % 2 == 1) 31 else 30 // Первый кулачок
-    else
-        return if (month % 2 == 1) 30 else 31 // Второй кулачок
+    return if (month <= 7) 30 + month % 2 else 31 - month % 2
 }
 
 /**
@@ -84,7 +82,7 @@ fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
     var h1 = r
     var h2 = s
     // Отсортируем b1, b2, b3 по возрастанию
-    var temp = 0
+    var temp: Int
     if (b1 > b2) {
         temp = b1
         b1 = b2
@@ -106,5 +104,5 @@ fun brickPasses(a: Int, b: Int, c: Int, r: Int, s: Int): Boolean {
         h1 = h2
         h2 = temp
     }
-    return (h1 >= b1) && (h2 >= b2)
+    return h1 >= b1 && h2 >= b2
 }

@@ -3,6 +3,7 @@
 package lesson2.task1
 
 import lesson1.task1.discriminant
+import lesson1.task1.sqr
 import kotlin.math.max
 import kotlin.math.sqrt
 import kotlin.math.abs
@@ -70,8 +71,8 @@ fun minBiRoot(a: Double, b: Double, c: Double): Double {
  * вернуть строку вида: «21 год», «32 года», «12 лет».
  */
 fun ageDescription(age: Int): String = when {
-    (age % 10 == 1) && (age % 100 != 11) -> "$age год"
-    (age % 10 in 2..4) && !(age % 100 in 12..14) -> "$age года"
+    age % 10 == 1 && age % 100 != 11 -> "$age год"
+    age % 10 in 2..4 && age % 100 !in 12..14 -> "$age года"
     else -> "$age лет"
 }
 
@@ -87,13 +88,12 @@ fun timeForHalfWay(
     t2: Double, v2: Double,
     t3: Double, v3: Double
 ): Double {
-    val S = t1 * v1 + t2 * v2 + t3 * v3 // Пройденный путь
-    if (S / 2 < t1 * v1)
-        return S / 2 / v1
-    else if (S / 2 < t1 * v1 + t2 * v2)
-        return t1 + (S / 2 - t1 * v1) / v2
-    else
-        return t1 + t2 + (S / 2 - t1 * v1 - t2 * v2) / v3
+    val s = t1 * v1 + t2 * v2 + t3 * v3 // Пройденный путь
+    return when {
+        s / 2 < t1 * v1 -> s / 2 / v1
+        s / 2 < t1 * v1 + t2 * v2 -> t1 + (s / 2 - t1 * v1) / v2
+        else -> t1 + t2 + (s / 2 - t1 * v1 - t2 * v2) / v3
+    }
 }
 
 /**
@@ -135,7 +135,7 @@ fun rookOrBishopThreatens(
     rookX: Int, rookY: Int,
     bishopX: Int, bishopY: Int
 ): Int {
-    val rookThreatens = (kingX == rookX) || (kingY == rookY)
+    val rookThreatens = kingX == rookX || kingY == rookY
     val bishopThreatens = abs(kingX - bishopX) == abs(kingY - bishopY)
     return when {
         rookThreatens && bishopThreatens -> 3
@@ -154,15 +154,13 @@ fun rookOrBishopThreatens(
  * Если такой треугольник не существует, вернуть -1.
  */
 fun triangleKind(a: Double, b: Double, c: Double): Int {
-    if ((a >= b + c) || (b >= a + c) || (c >= a + b)) return -1
-    /*  функция sqr() создаст излишнее нагромождение,
-        поэтому используем запись типа "a * a" для вычисления квадратов  */
-    val cosAlpha = (b * b + c * c - a * a) / (2 * b * c)
-    val cosBeta = (a * a + c * c - b * b) / (2 * a * c)
-    val cosGamma = (a * a + b * b - c * c) / (2 * a * b)
+    if (a >= b + c || b >= a + c || c >= a + b) return -1
+    val cosAlpha = (sqr(b) + sqr(c) - sqr(a)) / (2 * b * c)
+    val cosBeta = (sqr(a) + sqr(c) - sqr(b)) / (2 * a * c)
+    val cosGamma = (sqr(a) + sqr(b) - sqr(c)) / (2 * a * b)
     return when {
-        (cosAlpha < 0.0) || (cosBeta < 0.0) || (cosGamma < 0.0) -> 2
-        (cosAlpha == 0.0) || (cosBeta == 0.0) || (cosGamma == 0.0) -> 1
+        cosAlpha < 0.0 || cosBeta < 0.0 || cosGamma < 0.0 -> 2
+        cosAlpha == 0.0 || cosBeta == 0.0 || cosGamma == 0.0 -> 1
         else -> 0
     }
 }
@@ -176,7 +174,7 @@ fun triangleKind(a: Double, b: Double, c: Double): Int {
  * Если пересечения нет, вернуть -1.
  */
 fun segmentLength(a: Int, b: Int, c: Int, d: Int): Int {
-    if ((a > d) || (c > b))  // A B C D || C D A B
+    if (a > d || c > b)  // A B C D || C D A B
         return -1
     if (c in a..b) {
         if (d in a..b) // A C D B
