@@ -7,7 +7,6 @@ import kotlin.math.pow
 import kotlin.math.PI
 import lesson1.task1.sqr
 
-
 // Урок 3: циклы
 // Максимальное количество баллов = 9
 // Рекомендуемое количество баллов = 7
