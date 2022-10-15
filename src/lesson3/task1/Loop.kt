@@ -83,10 +83,17 @@ fun digitNumber(n: Int): Int = if (n < 10) 1 else digitNumber(n / 10) + 1
  * Найти число Фибоначчи из ряда 1, 1, 2, 3, 5, 8, 13, 21, ... с номером n.
  * Ряд Фибоначчи определён следующим образом: fib(1) = 1, fib(2) = 1, fib(n+2) = fib(n) + fib(n+1)
  */
-fun fib(n: Int): Int = when (n) {
-    1 -> 1
-    2 -> 1
-    else -> fib(n - 1) + fib(n - 2)
+fun fib(n: Int): Int {
+    if (n == 1 || n == 2) return 1
+    var x1 = 1
+    var x2 = 1
+    var x3 = 0
+    for (i in 3..n) {
+        x3 = x1 + x2
+        x1 = x2
+        x2 = x3
+    }
+    return x3
 }
 
 /**
@@ -110,16 +117,7 @@ fun minDivisor(n: Int): Int {
  *
  * Для заданного числа n > 1 найти максимальный делитель, меньший n
  */
-fun maxDivisor(n: Int): Int {
-    var maxDiv = 1
-    for (i in n - 1 downTo 1) {
-        if (n % i == 0) {
-            maxDiv = i
-            break
-        }
-    }
-    return maxDiv
-}
+fun maxDivisor(n: Int): Int = n / minDivisor(n)
 
 /**
  * Простая (2 балла)
@@ -161,7 +159,7 @@ fun gcd(m: Int, n: Int): Int = when {
  * Для заданных чисел m и n найти наименьшее общее кратное, то есть,
  * минимальное число k, которое делится и на m и на n без остатка
  */
-fun lcm(m: Int, n: Int): Int = m * n / gcd(m, n)
+fun lcm(m: Int, n: Int): Int = m / gcd(m, n) * n
 
 /**
  * Средняя (3 балла)
@@ -269,12 +267,6 @@ fun cos(x: Double, eps: Double): Double {
 }
 
 /**
- * Для решения следующих задач напишем функцию, считающую количество
- * разрядов в десятичной записи целого неотрицательного числа
- */
-fun cntDigits(n: Int): Int = if (n < 10) 1 else cntDigits(n / 10) + 1
-
-/**
  * Сложная (4 балла)
  *
  * Найти n-ю цифру последовательности из квадратов целых чисел:
@@ -291,7 +283,7 @@ fun squareSequenceDigit(n: Int): Int {
     do {
         cnt += digits
         currentSqr = sqr(currentNum)
-        digits = cntDigits(currentSqr)
+        digits = digitNumber(currentSqr)
         currentNum++
     } while (n !in cnt..cnt + digits)
     // Количество цифр справа от нужной цифры в текущем квадрате:
@@ -319,7 +311,7 @@ fun fibSequenceDigit(n: Int): Int {
     do {
         cnt += digits
         currentFib = fib(currentNum)
-        digits = cntDigits(currentFib)
+        digits = digitNumber(currentFib)
         currentNum++
     } while (n !in cnt..cnt + digits)
     // Количество цифр справа от нужной цифры в текущем числе Фибоначчи:
