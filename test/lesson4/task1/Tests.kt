@@ -165,6 +165,7 @@ class Tests {
         assertEquals(listOf(2), factorize(2))
         assertEquals(listOf(3, 5, 5), factorize(75))
         assertEquals(listOf(2, 3, 3, 19), factorize(342))
+        assertEquals(listOf(269, 2789), factorize(750241))
     }
 
     @Test
@@ -175,6 +176,7 @@ class Tests {
         assertEquals("2*3*3*19", factorizeToString(342))
         assertEquals("7*7*31*31*151*151", factorizeToString(1073676289))
         assertEquals("1073676287", factorizeToString(1073676287))
+        assertEquals("7*6091", factorizeToString(42637))
         assertEquals(Int.MAX_VALUE.toString(), factorizeToString(Int.MAX_VALUE))
     }
 

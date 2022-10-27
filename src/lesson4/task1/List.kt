@@ -207,15 +207,14 @@ fun accumulate(list: MutableList<Int>): MutableList<Int> {
  * Множители в списке должны располагаться по возрастанию.
  */
 fun factorize(n: Int): List<Int> {
-    if (isPrime(n)) return listOf(n)
     var x = n
     val divs = mutableListOf<Int>()
-    for (i in 2..ceil(sqrt(n.toDouble())).toInt())
+    for (i in 2..ceil(n / 2.0).toInt())
         while (x % i == 0) {
             divs += i
             x /= i
         }
-    return divs
+    return divs.ifEmpty { listOf(n) }
 }
 
 /**
@@ -256,18 +255,9 @@ fun convert(n: Int, base: Int): List<Int> {
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, n.toString(base) и подобные), запрещается.
  */
-fun convertToString(n: Int, base: Int): String {
-    if (n == 0) return "0"
-    var x = n
-    val str = StringBuilder()
-    var mod: Int
-    while (x != 0) {
-        mod = x % base
-        str.append(if (mod < 10) mod else 'a' + mod - 10)
-        x /= base
-    }
-    return str.reversed().toString()
-}
+fun convertToString(n: Int, base: Int): String =
+    convert(n, base).map { if (it < 10) it else 'a' + it - 10 }.joinToString(separator = "")
+
 
 /**
  * Средняя (3 балла)
@@ -278,9 +268,12 @@ fun convertToString(n: Int, base: Int): String {
  */
 fun decimal(digits: List<Int>, base: Int): Int {
     var base10 = 0
+    var multiplier = 1
     val len = digits.size
-    for (i in digits.indices)
-        base10 += digits[i] * base.toFloat().pow(len - 1 - i).toInt()
+    for (i in digits.indices.reversed()) {
+        base10 += digits[i] * multiplier
+        multiplier *= base
+    }
     return base10
 }
 
@@ -296,16 +289,8 @@ fun decimal(digits: List<Int>, base: Int): Int {
  * Использовать функции стандартной библиотеки, напрямую и полностью решающие данную задачу
  * (например, str.toInt(base)), запрещается.
  */
-fun decimalFromString(str: String, base: Int): Int {
-    var base10 = 0
-    val len = str.length
-    var digit: Int
-    for (i in str.indices) {
-        digit = if (str[i] in '0'..'9') str[i] - '0' else str[i] - 'a' + 10
-        base10 += digit * base.toDouble().pow(len - 1 - i).toInt()
-    }
-    return base10
-}
+fun decimalFromString(str: String, base: Int): Int =
+    decimal(str.map { if (it < 'a') it - '0' else it - 'a' + 10 }.toList(), base)
 
 /**
  * Сложная (5 баллов)
@@ -318,58 +303,74 @@ fun decimalFromString(str: String, base: Int): Int {
 fun roman(n: Int): String {
     val str = StringBuilder()
     var x = n
-    while (x >= 1000) {
-        str.append('M')
-        x -= 1000
-    }
-    if (x >= 900) {
-        str.append("CM")
-        x -= 900
-    }
-    if (x >= 500) {
-        str.append('D')
-        x -= 500
-    }
-    if (x >= 400) {
-        str.append("CD")
-        x -= 400
-    }
-    while (x >= 100) {
-        str.append('C')
-        x -= 100
-    }
-    if (x >= 90) {
-        str.append("XC")
-        x -= 90
-    }
-    if (x >= 50) {
-        str.append('L')
-        x -= 50
-    }
-    if (x >= 40) {
-        str.append("XL")
-        x -= 40
-    }
-    while (x >= 10) {
-        str.append('X')
-        x -= 10
-    }
-    if (x >= 9) {
-        str.append("IX")
-        x -= 9
-    }
-    if (x >= 5) {
-        str.append('V')
-        x -= 5
-    }
-    if (x >= 4) {
-        str.append("IV")
-        x -= 4
-    }
-    while (x >= 1) {
-        str.append('I')
-        x -= 1
-    }
+
+    while (x >= 1)
+        when {
+            x >= 1000 -> {
+                str.append('M')
+                x -= 1000
+            }
+
+            x >= 900 -> {
+                str.append("CM")
+                x -= 900
+            }
+
+            x >= 500 -> {
+                str.append('D')
+                x -= 500
+            }
+
+            x >= 400 -> {
+                str.append("CD")
+                x -= 400
+            }
+
+            x >= 100 -> {
+                str.append('C')
+                x -= 100
+            }
+
+            x >= 90 -> {
+                str.append("XC")
+                x -= 90
+            }
+
+            x >= 50 -> {
+                str.append('L')
+                x -= 50
+            }
+
+            x >= 40 -> {
+                str.append("XL")
+                x -= 40
+            }
+
+            x >= 10 -> {
+                str.append('X')
+                x -= 10
+            }
+
+            x >= 9 -> {
+                str.append("IX")
+                x -= 9
+            }
+
+            x >= 5 -> {
+                str.append('V')
+                x -= 5
+            }
+
+            x >= 4 -> {
+                str.append("IV")
+                x -= 4
+            }
+
+            else -> {
+                str.append('I')
+                x -= 1
+            }
+        }
     return str.toString()
 }
 
