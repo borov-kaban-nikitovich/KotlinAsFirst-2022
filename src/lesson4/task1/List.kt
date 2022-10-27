@@ -303,74 +303,28 @@ fun decimalFromString(str: String, base: Int): Int =
 fun roman(n: Int): String {
     val str = StringBuilder()
     var x = n
-
+    val romanNumbers = mapOf(
+        1000 to "M",
+        900 to "CM",
+        500 to "D",
+        400 to "CD",
+        100 to "C",
+        90 to "XC",
+        50 to "L",
+        40 to "XL",
+        10 to "X",
+        9 to "IX",
+        5 to "V",
+        4 to "IV",
+        1 to "I"
+    )
     while (x >= 1)
-        when {
-            x >= 1000 -> {
-                str.append('M')
-                x -= 1000
+        for ((arabicNumber, romanNumber) in romanNumbers)
+            if (x >= arabicNumber) {
+                x -= arabicNumber
+                str.append(romanNumber)
+                break
             }
-
-            x >= 900 -> {
-                str.append("CM")
-                x -= 900
-            }
-
-            x >= 500 -> {
-                str.append('D')
-                x -= 500
-            }
-
-            x >= 400 -> {
-                str.append("CD")
-                x -= 400
-            }
-
-            x >= 100 -> {
-                str.append('C')
-                x -= 100
-            }
-
-            x >= 90 -> {
-                str.append("XC")
-                x -= 90
-            }
-
-            x >= 50 -> {
-                str.append('L')
-                x -= 50
-            }
-
-            x >= 40 -> {
-                str.append("XL")
-                x -= 40
-            }
-
-            x >= 10 -> {
-                str.append('X')
-                x -= 10
-            }
-
-            x >= 9 -> {
-                str.append("IX")
-                x -= 9
-            }
-
-            x >= 5 -> {
-                str.append('V')
-                x -= 5
-            }
-
-            x >= 4 -> {
-                str.append("IV")
-                x -= 4
-            }
-
-            else -> {
-                str.append('I')
-                x -= 1
-            }
-        }
     return str.toString()
 }
 
