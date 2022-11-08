@@ -6,6 +6,7 @@ import kotlin.math.sqrt
 import kotlin.math.pow
 import kotlin.math.PI
 import lesson1.task1.sqr
+import kotlin.math.abs
 
 // Урок 3: циклы
 // Максимальное количество баллов = 9
@@ -75,7 +76,7 @@ fun digitCountInNumber(n: Int, m: Int): Int =
  *
  * Использовать операции со строками в этой задаче запрещается.
  */
-fun digitNumber(n: Int): Int = if (n < 10) 1 else digitNumber(n / 10) + 1
+fun digitNumber(n: Int): Int = if (abs(n) < 10) 1 else digitNumber(n / 10) + 1
 
 /**
  * Простая (2 балла)
@@ -230,7 +231,7 @@ fun sin(x: Double, eps: Double): Double {
     var exp = 3 // Показатель степени
     var ans = newX // Число, которое будем преобразовывать
     var nextNumber = newX.pow(exp) / factorial(exp)
-    while (nextNumber > eps) {
+    while (abs(nextNumber) > eps) {
         if (exp % 4 == 1)
             ans += nextNumber
         else

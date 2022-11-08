@@ -292,6 +292,22 @@ fun decimal(digits: List<Int>, base: Int): Int {
 fun decimalFromString(str: String, base: Int): Int =
     decimal(str.map { if (it < 'a') it - '0' else it - 'a' + 10 }.toList(), base)
 
+private val ROMANNUMBERS = mapOf(
+    1000 to "M",
+    900 to "CM",
+    500 to "D",
+    400 to "CD",
+    100 to "C",
+    90 to "XC",
+    50 to "L",
+    40 to "XL",
+    10 to "X",
+    9 to "IX",
+    5 to "V",
+    4 to "IV",
+    1 to "I"
+)
+
 /**
  * Сложная (5 баллов)
  *
@@ -303,23 +319,8 @@ fun decimalFromString(str: String, base: Int): Int =
 fun roman(n: Int): String {
     val str = StringBuilder()
     var x = n
-    val romanNumbers = mapOf(
-        1000 to "M",
-        900 to "CM",
-        500 to "D",
-        400 to "CD",
-        100 to "C",
-        90 to "XC",
-        50 to "L",
-        40 to "XL",
-        10 to "X",
-        9 to "IX",
-        5 to "V",
-        4 to "IV",
-        1 to "I"
-    )
     while (x >= 1)
-        for ((arabicNumber, romanNumber) in romanNumbers)
+        for ((arabicNumber, romanNumber) in ROMANNUMBERS)
             if (x >= arabicNumber) {
                 x -= arabicNumber
                 str.append(romanNumber)
