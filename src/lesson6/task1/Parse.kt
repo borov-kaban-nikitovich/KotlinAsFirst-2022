@@ -2,10 +2,57 @@
 
 package lesson6.task1
 
+import java.lang.IllegalArgumentException
+import java.lang.Integer.max
+
 // Урок 6: разбор строк, исключения
 // Максимальное количество баллов = 13
 // Рекомендуемое количество баллов = 11
 // Вместе с предыдущими уроками (пять лучших, 2-6) = 40/54
+
+private val MONTHS = listOf(
+    "января",
+    "февраля",
+    "марта",
+    "апреля",
+    "мая",
+    "июня",
+    "июля",
+    "августа",
+    "сентября",
+    "октября",
+    "ноября",
+    "декабря"
+)
+private val DAYSINMONTH = mapOf(
+    1 to 31,
+    2 to 29,
+    3 to 31,
+    4 to 30,
+    5 to 31,
+    6 to 30,
+    7 to 31,
+    8 to 31,
+    9 to 30,
+    10 to 31,
+    11 to 30,
+    12 to 31
+)
+private val ARABICNUMBERS = mapOf(
+    "M" to 1000,
+    "CM" to 900,
+    "D" to 500,
+    "CD" to 400,
+    "C" to 100,
+    "XC" to 90,
+    "L" to 50,
+    "XL" to 40,
+    "X" to 10,
+    "IX" to 9,
+    "V" to 5,
+    "IV" to 4,
+    "I" to 1
+)
 
 /**
  * Пример
@@ -62,6 +109,7 @@ fun main() {
     }
 }
 
+fun isNumber(x: String): Boolean = x.all { it.isDigit() } && x != ""
 
 /**
  * Средняя (4 балла)
@@ -74,7 +122,25 @@ fun main() {
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30.02.2009) считается неверными
  * входными данными.
  */
-fun dateStrToDigit(str: String): String = TODO()
+fun dateStrToDigit(str: String): String {
+    val parts = str.split(" ")
+    if (parts.size != 3)
+        return ""
+    if (!isNumber(parts[0]) || parts[1] !in MONTHS || !isNumber(parts[2]))
+        return ""
+    val day = parts[0].toInt()
+    val monthStr = parts[1]
+    val month = MONTHS.indexOf(monthStr) + 1
+    val year = parts[2].toInt()
+    if (monthStr == "февраля") {
+        val isLeap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0
+        if (!isLeap && day > 28)
+            return ""
+    }
+    if (day > DAYSINMONTH[month]!!)
+        return ""
+    return String.format("%02d.%02d.%d", day, month, year)
+}
 
 /**
  * Средняя (4 балла)
@@ -86,7 +152,22 @@ fun dateStrToDigit(str: String): String = TODO()
  * Обратите внимание: некорректная с точки зрения календаря дата (например, 30 февраля 2009) считается неверными
  * входными данными.
  */
-fun dateDigitToStr(digital: String): String = TODO()
+fun dateDigitToStr(digital: String): String {
+    val parts = digital.split(".")
+    if (parts.size != 3 || parts.any { !isNumber(it) })
+        return ""
+    val (day, month, year) = parts.map { it.toInt() }
+    if (month !in 1..12)
+        return ""
+    if (month == 2) {
+        val isLeap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0
+        if (!isLeap && day > 28)
+            return ""
+    }
+    if (day > DAYSINMONTH[month]!!)
+        return ""
+    return "$day ${MONTHS[month - 1]} $year"
+}
 
 /**
  * Средняя (4 балла)
@@ -102,7 +183,12 @@ fun dateDigitToStr(digital: String): String = TODO()
  *
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
-fun flattenPhoneNumber(phone: String): String = TODO()
+fun flattenPhoneNumber(phone: String): String {
+    return if (phone.matches(Regex("""\+?[0-9 -]*(\([0-9 -]+\))?[0-9 -]*""")))
+        phone.filter { it in '0'..'9' || it == '-' }
+    else
+        ""
+}
 
 /**
  * Средняя (5 баллов)
@@ -114,7 +200,17 @@ fun flattenPhoneNumber(phone: String): String = TODO()
  * Прочитать строку и вернуть максимальное присутствующее в ней число (717 в примере).
  * При нарушении формата входной строки или при отсутствии в ней чисел, вернуть -1.
  */
-fun bestLongJump(jumps: String): Int = TODO()
+fun bestLongJump(jumps: String): Int {
+    val parts = jumps.split(' ')
+    var bestJump = -1
+    for (part in parts) {
+        if (isNumber(part))
+            bestJump = max(bestJump, part.toInt())
+        else if (part != "%" && part != "-")
+            return -1
+    }
+    return bestJump
+}
 
 /**
  * Сложная (6 баллов)
@@ -127,7 +223,17 @@ fun bestLongJump(jumps: String): Int = TODO()
  * При нарушении формата входной строки, а также в случае отсутствия удачных попыток,
  * вернуть -1.
  */
-fun bestHighJump(jumps: String): Int = TODO()
+fun bestHighJump(jumps: String): Int {
+    if (!jumps.matches(Regex("""(\d+ %*[+-]? )*\d+ %*[+-]?""")))
+        return -1
+    val parts = jumps.split(' ')
+    var bestJump = -1
+    for (i in parts.indices step 2) {
+        if ('+' in parts[i + 1])
+            bestJump = max(bestJump, parts[i].toInt())
+    }
+    return bestJump
+}
 
 /**
  * Сложная (6 баллов)
@@ -138,7 +244,18 @@ fun bestHighJump(jumps: String): Int = TODO()
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int = TODO()
+fun plusMinus(expression: String): Int =
+    if (expression.matches(Regex("""\d+( [+-] \d+)*"""))) {
+        val parts = expression.split(' ')
+        var res = parts[0].toInt()
+        for (i in 1 until parts.size step 2)
+            if (parts[i] == "+")
+                res += parts[i + 1].toInt()
+            else
+                res -= parts[i + 1].toInt()
+        res
+    } else
+        throw IllegalArgumentException()
 
 /**
  * Сложная (6 баллов)
@@ -149,7 +266,16 @@ fun plusMinus(expression: String): Int = TODO()
  * Вернуть индекс начала первого повторяющегося слова, или -1, если повторов нет.
  * Пример: "Он пошёл в в школу" => результат 9 (индекс первого 'в')
  */
-fun firstDuplicateIndex(str: String): Int = TODO()
+fun firstDuplicateIndex(str: String): Int {
+    val parts = str.split(' ')
+    var strIndex = 0
+    for (partIndex in 0 until parts.size - 1) {
+        if (parts[partIndex].lowercase() == parts[partIndex + 1].lowercase())
+            return strIndex
+        strIndex += parts[partIndex].length + 1
+    }
+    return -1
+}
 
 /**
  * Сложная (6 баллов)
@@ -162,7 +288,20 @@ fun firstDuplicateIndex(str: String): Int = TODO()
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
-fun mostExpensive(description: String): String = TODO()
+fun mostExpensive(description: String): String =
+    if (description.matches(Regex("""([А-яЁё]+ \d+(\.\d+)?; )*[А-яЁё]+ \d+(\.\d+)?"""))) {
+        var maxCost = 0.0
+        var maxName = ""
+        for (product in description.split("; ")) {
+            val name = product.split(' ')[0]
+            val cost = product.split(' ')[1].toDouble()
+            if (cost > maxCost) {
+                maxCost = cost
+                maxName = name
+            }
+        }
+        maxName
+    } else ""
 
 /**
  * Сложная (6 баллов)
@@ -175,7 +314,33 @@ fun mostExpensive(description: String): String = TODO()
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int = TODO()
+fun fromRoman(roman: String): Int =
+    if (roman.matches(Regex("""M*(CM|DC{0,3}|CD|C{0,3})(XC|LX{0,3}|XL|X{0,3})(IX|VI{0,3}|IV|I{0,3})""")) &&
+        roman.isNotEmpty()
+    ) {
+        val singleCharNumbers =
+            ARABICNUMBERS.filter { it.key.length == 1 }.toList().sortedByDescending { it.second }.map { it.first }
+        val doubleCharNumbers =
+            ARABICNUMBERS.filter { it.key.length == 2 }.toList().sortedByDescending { it.second }.map { it.first }
+        var res = 0
+        var i = 0
+        outerCycle@ while (i < roman.length) {
+            if (i < roman.length - 1)
+                for (el in doubleCharNumbers)
+                    if (el == roman.substring(i, i + 2)) {
+                        res += ARABICNUMBERS[el]!!
+                        i += 2
+                        continue@outerCycle
+                    }
+            for (el in singleCharNumbers)
+                if (el == roman[i].toString()) {
+                    res += ARABICNUMBERS[el]!!
+                    i += 1
+                    continue@outerCycle
+                }
+        }
+        res
+    } else -1
 
 /**
  * Очень сложная (7 баллов)
@@ -213,4 +378,67 @@ fun fromRoman(roman: String): Int = TODO()
  * IllegalArgumentException должен бросаться даже если ошибочная команда не была достигнута в ходе выполнения.
  *
  */
-fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> = TODO()
+fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
+    // Проверим соответствие строки commands шаблону
+    var openBracketCount = 0
+    var closeBracketCount = 0
+    for (command in commands)
+        when (command) {
+            '[' -> openBracketCount++
+            ']' -> closeBracketCount++
+            !in "+-<>[] " -> throw IllegalArgumentException()
+        }
+    if (openBracketCount != closeBracketCount)
+        throw IllegalArgumentException()
+
+    // Пройдём по командам
+    val conveyor = MutableList(cells) { 0 }
+    var step = 0
+    var i = cells / 2   // Индекс ячейки
+    var j = 0           // Индекс команды
+    while (step < limit && j in commands.indices) {
+        when (commands[j]) {
+            ' ' -> {}
+            '>' -> i += 1
+            '<' -> i -= 1
+            '+' -> conveyor[i]++
+            '-' -> conveyor[i]--
+            '[' -> {
+                if (conveyor[i] == 0) {
+                    var openCount = 0
+                    var closeCount = 0
+                    while (openCount != closeCount || openCount == 0) {
+                        if (commands[j] == '[')
+                            openCount++
+                        if (commands[j] == ']')
+                            closeCount++
+                        j++
+                    }
+                    j-- // Вернёмся к '['
+                }
+            }
+
+            ']' -> {
+                if (conveyor[i] != 0) {
+                    var openCount = 0
+                    var closeCount = 0
+                    while (openCount != closeCount || closeCount == 0) {
+                        if (commands[j] == '[')
+                            openCount++
+                        if (commands[j] == ']')
+                            closeCount++
+                        j--
+                    }
+                    j++ // Вернёмся к '['
+                }
+            }
+
+            else -> throw IllegalArgumentException()
+        }
+        if (i < 0 || i >= cells)
+            throw IllegalStateException()
+        j++
+        step++
+    }
+    return conveyor
+}

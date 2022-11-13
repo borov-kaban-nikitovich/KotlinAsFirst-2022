@@ -123,6 +123,8 @@ class Tests {
     fun containsIn() {
         assertTrue(containsIn(mapOf("a" to "z"), mapOf("a" to "z", "b" to "sweet")))
         assertFalse(containsIn(mapOf("a" to "z"), mapOf("a" to "zee", "b" to "sweet")))
+        assertFalse(containsIn(mapOf("a" to "z"), mapOf()))
+        assertTrue(containsIn(mapOf(), mapOf("a" to "zee", "b" to "sweet")))
     }
 
     @Test
@@ -235,6 +237,7 @@ class Tests {
         assertFalse(canBuildFrom(emptyList(), "foo"))
         assertTrue(canBuildFrom(listOf('a', 'b', 'o'), "baobab"))
         assertFalse(canBuildFrom(listOf('a', 'm', 'r'), "Marat"))
+        assertTrue(canBuildFrom(listOf('a', 'm', 'r', 't'), "Marat"))
     }
 
     @Test

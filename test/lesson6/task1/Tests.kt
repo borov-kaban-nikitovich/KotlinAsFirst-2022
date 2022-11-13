@@ -84,6 +84,10 @@ class Tests {
         assertEquals(226, bestHighJump("226 +"))
         assertEquals(-1, bestHighJump("???"))
         assertEquals(230, bestHighJump("220 + 224 %+ 228 %- 230 + 232 %%- 234 %"))
+        assertEquals(-1, bestHighJump("226 +-"))
+        assertEquals(226, bestHighJump("226 %%%+"))
+        assertEquals(-1, bestHighJump("226 +%"))
+        assertEquals(-1, bestHighJump("226 +% 22"))
     }
 
     @Test
@@ -107,6 +111,7 @@ class Tests {
         assertEquals(9, firstDuplicateIndex("Он пошёл в в школу"))
         assertEquals(40, firstDuplicateIndex("Яблоко упало на ветку с ветки оно упало на на землю"))
         assertEquals(9, firstDuplicateIndex("Мы пошли прямо Прямо располагался магазин"))
+        assertEquals(9, firstDuplicateIndex("Мы пошли прямо1 Прямо1 располагался магазин"))
     }
 
     @Test
@@ -120,6 +125,8 @@ class Tests {
     @Test
     @Tag("6")
     fun fromRoman() {
+        assertEquals(-1, fromRoman(""))
+        assertEquals(-1, fromRoman("IVIV"))
         assertEquals(1, fromRoman("I"))
         assertEquals(3000, fromRoman("MMM"))
         assertEquals(1978, fromRoman("MCMLXXVIII"))
