@@ -184,7 +184,7 @@ fun dateDigitToStr(digital: String): String {
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
 fun flattenPhoneNumber(phone: String): String =
-    if (phone.matches(Regex("""\+?[0-9 -]*(\([0-9 -]+\))?[0-9 -]*""")))
+    if (phone.matches(Regex("""\+?[\d -]*(\([\d -]+\))?[\d -]*""")) && phone != "+")
         phone.filter { it in '0'..'9' || it == '+' }
     else
         ""
@@ -288,7 +288,7 @@ fun firstDuplicateIndex(str: String): Int {
  * Все цены должны быть больше нуля либо равны нулю.
  */
 fun mostExpensive(description: String): String =
-    if (description.matches(Regex("""([^\d.\s]+ \d+(\.\d+)?; )*[^\d.\s]+ \d+(\.\d+)?"""))) {
+    if (description.matches(Regex("""([^\s;]+ \d+(\.\d+)?; )*[^\s;]+ \d+(\.\d+)?"""))) {
         var maxCost = 0.0
         var maxName = ""
         for (product in description.split("; ").reversed()) {
@@ -384,7 +384,12 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     for (command in commands)
         when (command) {
             '[' -> openBracketCount++
-            ']' -> closeBracketCount++
+            ']' -> {
+                if (openBracketCount == 0)
+                    throw IllegalArgumentException()
+                closeBracketCount++
+            }
+
             !in "+-<>[] " -> throw IllegalArgumentException()
         }
     if (openBracketCount != closeBracketCount)
