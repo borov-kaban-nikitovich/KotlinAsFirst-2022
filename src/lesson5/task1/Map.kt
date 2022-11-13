@@ -228,7 +228,7 @@ fun findCheapestStuff(stuff: Map<String, Pair<String, Double>>, kind: String): S
  *   canBuildFrom(listOf('a', 'b', 'o'), "baobab") -> true
  */
 fun canBuildFrom(chars: List<Char>, word: String): Boolean =
-    chars.map { it.lowercaseChar() }.toSet() == word.lowercase().toSet()
+    word.toSet().all { it.lowercaseChar() in chars.toString().lowercase() }
 
 /**
  * Средняя (4 балла)
@@ -300,35 +300,7 @@ fun hasAnagrams(words: List<String>): Boolean = TODO()
  *          "GoodGnome" to setOf()
  *        )
  */
-fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> {
-    val handshakes = mutableMapOf<String, MutableSet<String>>()
-    for ((key, value) in friends)
-        handshakes[key] = value.toMutableSet()
-    val currentFriends = mutableSetOf<String>()
-    val toRemove = mutableSetOf<String>()
-    for (person in friends.keys) {
-        currentFriends.addAll(friends[person]!!)
-        while (currentFriends.isNotEmpty()) {
-            for (el in currentFriends) {
-                if (el !in handshakes.keys)
-                    handshakes[el] = mutableSetOf()
-                if (el == person)
-                    toRemove.add(el)
-                else if (el in handshakes[person]!!) {
-                    toRemove.add(el)
-                    if (friends[el] != null)
-                        currentFriends.addAll(friends[el]!!.filter {
-                            it != person && it !in handshakes[person]!!
-                        })
-                }
-            }
-            currentFriends.removeAll(toRemove)
-            handshakes[person]!!.addAll(currentFriends)
-        }
-        toRemove.clear()
-    }
-    return handshakes
-}
+fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<String>> = TODO()
 
 /**
  * Сложная (6 баллов)

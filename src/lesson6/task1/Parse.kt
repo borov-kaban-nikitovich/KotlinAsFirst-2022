@@ -183,12 +183,11 @@ fun dateDigitToStr(digital: String): String {
  *
  * PS: Дополнительные примеры работы функции можно посмотреть в соответствующих тестах.
  */
-fun flattenPhoneNumber(phone: String): String {
-    return if (phone.matches(Regex("""\+?[0-9 -]*(\([0-9 -]+\))?[0-9 -]*""")))
-        phone.filter { it in '0'..'9' || it == '-' }
+fun flattenPhoneNumber(phone: String): String =
+    if (phone.matches(Regex("""\+?[0-9 -]*(\([0-9 -]+\))?[0-9 -]*""")))
+        phone.filter { it in '0'..'9' || it == '+' }
     else
         ""
-}
 
 /**
  * Средняя (5 баллов)
@@ -289,13 +288,13 @@ fun firstDuplicateIndex(str: String): Int {
  * Все цены должны быть больше нуля либо равны нулю.
  */
 fun mostExpensive(description: String): String =
-    if (description.matches(Regex("""([А-яЁё]+ \d+(\.\d+)?; )*[А-яЁё]+ \d+(\.\d+)?"""))) {
+    if (description.matches(Regex("""([А-яЁёA-z]+ \d+(\.\d+)?; )*[А-яЁёA-z]+ \d+(\.\d+)?"""))) {
         var maxCost = 0.0
         var maxName = ""
-        for (product in description.split("; ")) {
+        for (product in description.split("; ").reversed()) {
             val name = product.split(' ')[0]
             val cost = product.split(' ')[1].toDouble()
-            if (cost > maxCost) {
+            if (cost >= maxCost) {
                 maxCost = cost
                 maxName = name
             }
