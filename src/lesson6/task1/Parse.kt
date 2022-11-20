@@ -2,6 +2,7 @@
 
 package lesson6.task1
 
+import lesson2.task2.daysInMonth
 import java.lang.IllegalArgumentException
 import java.lang.Integer.max
 
@@ -23,20 +24,6 @@ private val MONTHS = listOf(
     "октября",
     "ноября",
     "декабря"
-)
-private val DAYSINMONTH = mapOf(
-    1 to 31,
-    2 to 29,
-    3 to 31,
-    4 to 30,
-    5 to 31,
-    6 to 30,
-    7 to 31,
-    8 to 31,
-    9 to 30,
-    10 to 31,
-    11 to 30,
-    12 to 31
 )
 private val ARABICNUMBERS = mapOf(
     "M" to 1000,
@@ -109,8 +96,6 @@ fun main() {
     }
 }
 
-fun isNumber(x: String): Boolean = x.all { it.isDigit() } && x != ""
-
 /**
  * Средняя (4 балла)
  *
@@ -126,18 +111,13 @@ fun dateStrToDigit(str: String): String {
     val parts = str.split(" ")
     if (parts.size != 3)
         return ""
-    if (!isNumber(parts[0]) || parts[1] !in MONTHS || !isNumber(parts[2]))
+    if (parts[1] !in MONTHS)
         return ""
-    val day = parts[0].toInt()
+    val day = parts[0].toIntOrNull() ?: return ""
     val monthStr = parts[1]
     val month = MONTHS.indexOf(monthStr) + 1
-    val year = parts[2].toInt()
-    if (monthStr == "февраля") {
-        val isLeap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0
-        if (!isLeap && day > 28)
-            return ""
-    }
-    if (day > DAYSINMONTH[month]!!)
+    val year = parts[2].toIntOrNull() ?: return ""
+    if (day !in 1..daysInMonth(month, year))
         return ""
     return String.format("%02d.%02d.%d", day, month, year)
 }
@@ -154,17 +134,12 @@ fun dateStrToDigit(str: String): String {
  */
 fun dateDigitToStr(digital: String): String {
     val parts = digital.split(".")
-    if (parts.size != 3 || parts.any { !isNumber(it) })
+    if (parts.size != 3)
         return ""
-    val (day, month, year) = parts.map { it.toInt() }
+    val (day, month, year) = parts.map { it.toIntOrNull() ?: return "" }
     if (month !in 1..12)
         return ""
-    if (month == 2) {
-        val isLeap = year % 4 == 0 && year % 100 != 0 || year % 400 == 0
-        if (!isLeap && day > 28)
-            return ""
-    }
-    if (day > DAYSINMONTH[month]!!)
+    if (day !in 1..daysInMonth(month, year))
         return ""
     return "$day ${MONTHS[month - 1]} $year"
 }
@@ -203,10 +178,9 @@ fun bestLongJump(jumps: String): Int {
     val parts = jumps.split(' ')
     var bestJump = -1
     for (part in parts) {
-        if (isNumber(part))
-            bestJump = max(bestJump, part.toInt())
-        else if (part != "%" && part != "-")
-            return -1
+        if (part == "%" || part == "-")
+            continue
+        bestJump = max(bestJump, part.toIntOrNull() ?: return -1)
     }
     return bestJump
 }
@@ -243,18 +217,28 @@ fun bestHighJump(jumps: String): Int {
  * Вернуть значение выражения (6 для примера).
  * Про нарушении формата входной строки бросить исключение IllegalArgumentException
  */
-fun plusMinus(expression: String): Int =
-    if (expression.matches(Regex("""\d+( [+-] \d+)*"""))) {
-        val parts = expression.split(' ')
-        var res = parts[0].toInt()
-        for (i in 1 until parts.size step 2)
-            if (parts[i] == "+")
-                res += parts[i + 1].toInt()
-            else
-                res -= parts[i + 1].toInt()
-        res
-    } else
+fun plusMinus(expression: String): Int {
+    val parts = expression.split(' ')
+    var res: Int
+    if (parts[0].matches(Regex("\\d+")))
+        res = parts[0].toInt()
+    else
         throw IllegalArgumentException()
+    for (i in 1 until parts.size step 2) {
+        val number: Int
+        if (parts[i + 1].matches(Regex("\\d+")))
+            number = parts[i + 1].toInt()
+        else
+            throw IllegalArgumentException()
+        if (parts[i] == "+")
+            res += number
+        else if (parts[i] == "-")
+            res -= number
+        else
+            throw IllegalArgumentException()
+    }
+    return res
+}
 
 /**
  * Сложная (6 баллов)
@@ -287,20 +271,21 @@ fun firstDuplicateIndex(str: String): Int {
  * или пустую строку при нарушении формата строки.
  * Все цены должны быть больше нуля либо равны нулю.
  */
-fun mostExpensive(description: String): String =
-    if (description.matches(Regex("""([^\s;]+ \d+(\.\d+)?; )*[^\s;]+ \d+(\.\d+)?"""))) {
-        var maxCost = 0.0
-        var maxName = ""
-        for (product in description.split("; ").reversed()) {
-            val name = product.split(' ')[0]
-            val cost = product.split(' ')[1].toDouble()
-            if (cost >= maxCost) {
-                maxCost = cost
-                maxName = name
-            }
+fun mostExpensive(description: String): String {
+    var maxCost = -1.0
+    var maxName = ""
+    for (el in description.split("; ")) {
+        val product = el.split(' ')
+        if (product.size != 2) return ""
+        val name = product[0]
+        val cost = product[1].toDoubleOrNull() ?: return ""
+        if (cost > maxCost) {
+            maxCost = cost
+            maxName = name
         }
-        maxName
-    } else ""
+    }
+    return maxName
+}
 
 /**
  * Сложная (6 баллов)
@@ -313,33 +298,30 @@ fun mostExpensive(description: String): String =
  *
  * Вернуть -1, если roman не является корректным римским числом
  */
-fun fromRoman(roman: String): Int =
-    if (roman.matches(Regex("""M*(CM|DC{0,3}|CD|C{0,3})(XC|LX{0,3}|XL|X{0,3})(IX|VI{0,3}|IV|I{0,3})""")) &&
-        roman.isNotEmpty()
-    ) {
-        val singleCharNumbers =
-            ARABICNUMBERS.filter { it.key.length == 1 }.toList().sortedByDescending { it.second }.map { it.first }
-        val doubleCharNumbers =
-            ARABICNUMBERS.filter { it.key.length == 2 }.toList().sortedByDescending { it.second }.map { it.first }
-        var res = 0
-        var i = 0
-        outerCycle@ while (i < roman.length) {
-            if (i < roman.length - 1)
-                for (el in doubleCharNumbers)
-                    if (el == roman.substring(i, i + 2)) {
-                        res += ARABICNUMBERS[el]!!
-                        i += 2
-                        continue@outerCycle
-                    }
-            for (el in singleCharNumbers)
-                if (el == roman[i].toString()) {
+fun fromRoman(roman: String): Int {
+    if (!roman.matches(Regex("""M*(CM|DC{0,3}|CD|C{0,3})(XC|LX{0,3}|XL|X{0,3})(IX|VI{0,3}|IV|I{0,3})""")) ||
+        roman == ""
+    ) return -1
+
+    var res = 0
+    var i = 0
+    outerCycle@ while (i < roman.length) {
+        if (i < roman.length - 1)
+            for (el in ARABICNUMBERS.keys)
+                if (el == roman.substring(i, i + 2)) {
                     res += ARABICNUMBERS[el]!!
-                    i += 1
+                    i += 2
                     continue@outerCycle
                 }
-        }
-        res
-    } else -1
+        for (el in ARABICNUMBERS.keys)
+            if (el == roman[i].toString()) {
+                res += ARABICNUMBERS[el]!!
+                i += 1
+                continue@outerCycle
+            }
+    }
+    return res
+}
 
 /**
  * Очень сложная (7 баллов)
