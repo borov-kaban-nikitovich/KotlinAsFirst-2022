@@ -4,6 +4,7 @@ package lesson7.task1
 
 import java.io.File
 import lesson3.task1.digitNumber
+import java.lang.Exception
 
 
 // Урок 7: работа с файлами
@@ -292,7 +293,7 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
     val writer = File(outputName).bufferedWriter()
-    val tags = mutableListOf<String>()
+    val tags = mutableListOf<String>() // Стек открытых тегов
 
     fun openTag(tag: String) {
         writer.write("<$tag>")
@@ -304,58 +305,46 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         tags.removeLast()
     }
 
-    for (tag in setOf("html", "body", "p")) {
-        tags.add(tag)
+    // Теги body и html сами не откроются.
+    for (tag in setOf("html", "body", "p"))
         openTag(tag)
-    }
+
     for (line in File(inputName).readLines()) {
-        if (line.isEmpty()) {
+        if (line.isEmpty() && tags.last() == "p")
             closeTag("p")
-            tags.removeLast()
-        }
-        if (line.isNotEmpty() && tags.last() != "p") {
+        if (tags.last() != "p" && line.isNotEmpty())
             openTag("p")
-        }
+
         var i = 0
-        while (i < line.length) {
+        while (i < line.length)
             when (line[i]) {
                 '*' -> {
                     if (i < line.length - 2 && line.substring(i, i + 3) == "***") {
                         if (tags.takeLast(2).toSet() == setOf("b", "i")) {
                             if (tags.last() == "b") {
-                                closeTag("b")
-                                closeTag("i")
+                                closeTag("b"); closeTag("i")
                             } else {
-                                closeTag("i")
-                                closeTag("b")
+                                closeTag("i"); closeTag("b")
                             }
                         } else {
-                            openTag("b")
-                            openTag("i")
+                            openTag("b"); openTag("i")
                         }
                         i += 3
                     } else if (i < line.length - 1 && line.substring(i, i + 2) == "**") {
-                        if (tags.last() == "b")
-                            closeTag("b")
-                        else
-                            openTag("b")
+                        if (tags.last() == "b") closeTag("b")
+                        else openTag("b")
                         i += 2
                     } else {
-                        if (tags.last() == "i")
-                            closeTag("i")
-                        else
-                            openTag("i")
+                        if (tags.last() == "i") closeTag("i")
+                        else openTag("i")
                         i += 1
                     }
                 }
 
                 '~' -> {
                     if (i < line.length - 1 && line.substring(i, i + 2) == "~~") {
-                        if (tags.last() == "s") {
-                            closeTag("s")
-                        } else {
-                            openTag("s")
-                        }
+                        if (tags.last() == "s") closeTag("s")
+                        else openTag("s")
                         i += 2
                     }
                 }
@@ -365,13 +354,19 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
                     i += 1
                 }
             }
-        }
+    }
 
-    }
-    for (tag in setOf("p", "body", "html")) {
+    // В конце файла может быть пустая строка. Тогда абзац закроется в цикле сам.
+    if (tags.last() == "p")
+        closeTag("p")
+
+    // Теги body и html сами не закроются.
+    for (tag in setOf("body", "html"))
         closeTag(tag)
-    }
+
     writer.close()
+    if (tags.isNotEmpty())
+        throw Exception("ашипка")
 }
 
 /**
@@ -556,16 +551,34 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  *
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
+    val goodNumbers = rhv <= lhv || digitNumber(lhv) == 1
     val divStr = (lhv / rhv).toString()
-    val writer = File(outputName).bufferedWriter()
-    writer.write(" $lhv | $rhv\n")
     var mult = divStr.take(1).toInt() * rhv
-    // Число 3 след. строке -- количество символов между делимым и делителем
-    writer.write("-$mult" + " ".repeat(digitNumber(lhv) + 3 - digitNumber(mult)) + divStr + '\n')
-    writer.write("-".repeat(digitNumber(mult) + 1) + '\n')
     var margin = 1
-    var mod = lhv.toString().take(digitNumber(mult)).toInt()
+    var mod =
+        if (divStr.toInt() != 0)
+            lhv.toString().take(digitNumber(mult)).toInt()
+        else lhv
+    val writer = File(outputName).bufferedWriter()
 
+    // Выведем 1 строку.
+    if (goodNumbers) // Делать ли отступ над минусом?
+        writer.write(" ")
+    writer.write("$lhv | $rhv\n")
+
+    // Выведем 2 строку.
+    if (goodNumbers) // Число 3 в строке ниже -- кол-во символов в строке " | "
+        writer.write("-$mult" + " ".repeat(digitNumber(lhv) + 3 - digitNumber(mult)) + divStr + '\n')
+    else // Число 2 в строке ниже -- кол-во символов в строке "-d", где d -- цифра; 3 -- в строке " | "
+        writer.write(" ".repeat(digitNumber(lhv) - 2) + "-$mult" + " ".repeat(3) + divStr + '\n')
+
+    // Выведем 3 строку.
+    if (goodNumbers)
+        writer.write("-".repeat(digitNumber(mult) + 1) + '\n')
+    else
+        writer.write("-".repeat(digitNumber(lhv)) + '\n')
+
+    // Выведем все остальные строки, кроме последней.
     for (i in 1 until divStr.length) {
         mod -= mult
         if (digitNumber(mult) - digitNumber(mod) > 0)
@@ -573,7 +586,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
 
         val modWasZero = mod == 0
 
-        // "-2" в след. строке: 1 символ из margin компенсирует "-" второй строки файла; ещё -1, т.к. индексация с 0.
+        // "-2" в след. строке: 1 из margin компенсирует "-" второй строки файла; ещё -1, т.к. индексация с 0.
         writer.write(" ".repeat(margin) + mod.toString())
         mod = mod * 10 + (lhv.toString()[margin + digitNumber(mod) - 1] - '0')
         writer.write((mod % 10).toString() + '\n')
@@ -601,7 +614,13 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
         writer.newLine()
     }
 
-    writer.write(" ".repeat(margin + digitNumber(mult) - digitNumber(mod - mult)) + (lhv % rhv).toString())
+    // Выведем последнюю строку.
+    val finalMargin =
+        if (goodNumbers)
+            margin + digitNumber(mult) - digitNumber(mod - mult)
+        else 0
+    writer.write(" ".repeat(finalMargin) + (lhv % rhv).toString())
+
     writer.close()
 }
 
