@@ -4,7 +4,7 @@ package lesson7.task1
 
 import java.io.File
 import lesson3.task1.digitNumber
-import java.lang.Exception
+import java.lang.StringBuilder
 
 
 // Урок 7: работа с файлами
@@ -177,7 +177,36 @@ fun alignFileByWidth(inputName: String, outputName: String) {
  * Ключи в ассоциативном массиве должны быть в нижнем регистре.
  *
  */
-fun top20Words(inputName: String): Map<String, Int> = TODO()
+fun top20Words(inputName: String): Map<String, Int> {
+    val topWords = mutableMapOf<String, Int>()
+    val word = StringBuilder()
+    val reader = File(inputName).bufferedReader()
+    do {
+        val value = reader.read()
+        if (value == -1)
+            continue
+        val symbol = value.toChar().lowercaseChar()
+        if (symbol in 'а'..'я' || symbol == 'ё' || symbol in 'a'..'z')
+            word.append(symbol)
+        else if (word.isNotEmpty()) {
+            topWords[word.toString()] = topWords[word.toString()]?.plus(1) ?: 1
+            word.clear()
+        }
+    } while (value != -1)
+    reader.close()
+
+    val res = mutableMapOf<String, Int>()
+    var count = 0
+    var prevNumber = 0
+    for ((key, value) in topWords.toList().sortedByDescending { it.second }) {
+        if (count >= 20 && prevNumber > value)
+            break
+        res[key] = value
+        prevNumber = value
+        count++
+    }
+    return res
+}
 
 /**
  * Средняя (14 баллов)
@@ -215,7 +244,24 @@ fun top20Words(inputName: String): Map<String, Int> = TODO()
  * Обратите внимание: данная функция не имеет возвращаемого значения
  */
 fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: String) {
-    TODO()
+    val writer = File(outputName).bufferedWriter()
+    val reader = File(inputName).bufferedReader()
+    var value = reader.read()
+    while (value != -1) {
+        val symbol = value.toChar()
+        val stringToWrite = when {
+            symbol.uppercaseChar() in dictionary.keys -> dictionary[symbol.uppercaseChar()]!!
+            symbol.lowercaseChar() in dictionary.keys -> dictionary[symbol.lowercaseChar()]!!
+            else -> symbol.toString()
+        }
+        if (symbol.isUpperCase())
+            writer.write(stringToWrite[0].uppercase() + stringToWrite.substring(1).lowercase())
+        else
+            writer.write(stringToWrite.lowercase())
+        value = reader.read()
+    }
+    reader.close()
+    writer.close()
 }
 
 /**
@@ -365,8 +411,6 @@ fun markdownToHtmlSimple(inputName: String, outputName: String) {
         closeTag(tag)
 
     writer.close()
-    if (tags.isNotEmpty())
-        throw Exception("ашипка")
 }
 
 /**
@@ -586,8 +630,7 @@ fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
 
         val modWasZero = mod == 0
 
-        // "-2" в след. строке: 1 из margin компенсирует "-" второй строки файла; ещё -1, т.к. индексация с 0.
-        writer.write(" ".repeat(margin) + mod.toString())
+        writer.write(" ".repeat(margin + (mod)) + mod.toString())
         mod = mod * 10 + (lhv.toString()[margin + digitNumber(mod) - 1] - '0')
         writer.write((mod % 10).toString() + '\n')
 
