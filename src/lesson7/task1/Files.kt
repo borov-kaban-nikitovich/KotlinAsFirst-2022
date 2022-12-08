@@ -254,10 +254,10 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
             symbol.lowercaseChar() in dictionary.keys -> dictionary[symbol.lowercaseChar()]!!
             else -> symbol.toString()
         }
-        if (symbol in 'а'..'я' || symbol == 'ё' || symbol in 'a'..'z')
-            writer.write(stringToWrite.lowercase())
-        else
+        if (symbol.isUpperCase() && stringToWrite != "")
             writer.write(stringToWrite[0].uppercase() + stringToWrite.substring(1).lowercase())
+        else
+            writer.write(stringToWrite.lowercase())
         value = reader.read()
     }
     reader.close()
