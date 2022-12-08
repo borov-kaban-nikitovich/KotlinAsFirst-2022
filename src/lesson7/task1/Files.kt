@@ -254,10 +254,10 @@ fun transliterate(inputName: String, dictionary: Map<Char, String>, outputName: 
             symbol.lowercaseChar() in dictionary.keys -> dictionary[symbol.lowercaseChar()]!!
             else -> symbol.toString()
         }
-        if (symbol.isUpperCase())
-            writer.write(stringToWrite[0].uppercase() + stringToWrite.substring(1).lowercase())
-        else
+        if (symbol.isLowerCase())
             writer.write(stringToWrite.lowercase())
+        else
+            writer.write(stringToWrite[0].uppercase() + stringToWrite.substring(1).lowercase())
         value = reader.read()
     }
     reader.close()
@@ -338,79 +338,7 @@ Suspendisse <s>et elit in enim tempus iaculis</s>.
  * (Отступы и переносы строк в примере добавлены для наглядности, при решении задачи их реализовывать не обязательно)
  */
 fun markdownToHtmlSimple(inputName: String, outputName: String) {
-    val writer = File(outputName).bufferedWriter()
-    val tags = mutableListOf<String>() // Стек открытых тегов
-
-    fun openTag(tag: String) {
-        writer.write("<$tag>")
-        tags.add(tag)
-    }
-
-    fun closeTag(tag: String) {
-        writer.write("</$tag>")
-        tags.removeLast()
-    }
-
-    // Теги body и html сами не откроются.
-    for (tag in setOf("html", "body", "p"))
-        openTag(tag)
-
-    for (line in File(inputName).readLines()) {
-        if (line.isEmpty() && tags.last() == "p")
-            closeTag("p")
-        if (tags.last() != "p" && line.isNotEmpty())
-            openTag("p")
-
-        var i = 0
-        while (i < line.length)
-            when (line[i]) {
-                '*' -> {
-                    if (i < line.length - 2 && line.substring(i, i + 3) == "***") {
-                        if (tags.takeLast(2).toSet() == setOf("b", "i")) {
-                            if (tags.last() == "b") {
-                                closeTag("b"); closeTag("i")
-                            } else {
-                                closeTag("i"); closeTag("b")
-                            }
-                        } else {
-                            openTag("b"); openTag("i")
-                        }
-                        i += 3
-                    } else if (i < line.length - 1 && line.substring(i, i + 2) == "**") {
-                        if (tags.last() == "b") closeTag("b")
-                        else openTag("b")
-                        i += 2
-                    } else {
-                        if (tags.last() == "i") closeTag("i")
-                        else openTag("i")
-                        i += 1
-                    }
-                }
-
-                '~' -> {
-                    if (i < line.length - 1 && line.substring(i, i + 2) == "~~") {
-                        if (tags.last() == "s") closeTag("s")
-                        else openTag("s")
-                        i += 2
-                    }
-                }
-
-                else -> {
-                    writer.write(line[i].toString())
-                    i += 1
-                }
-            }
-    }
-
-    // В конце файла может быть пустая строка. Тогда абзац закроется в цикле сам.
-    if (tags.last() == "p")
-        closeTag("p")
-
-    // Теги body и html сами не закроются.
-    for (tag in setOf("body", "html"))
-        closeTag(tag)
-
-    writer.close()
+    TODO()
 }
 
 /**
@@ -595,75 +523,6 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  *
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    val goodNumbers = rhv <= lhv || digitNumber(lhv) == 1
-    val divStr = (lhv / rhv).toString()
-    var mult = divStr.take(1).toInt() * rhv
-    var margin = 1
-    var mod =
-        if (divStr.toInt() != 0)
-            lhv.toString().take(digitNumber(mult)).toInt()
-        else lhv
-    val writer = File(outputName).bufferedWriter()
-
-    // Выведем 1 строку.
-    if (goodNumbers) // Делать ли отступ над минусом?
-        writer.write(" ")
-    writer.write("$lhv | $rhv\n")
-
-    // Выведем 2 строку.
-    if (goodNumbers) // Число 3 в строке ниже -- кол-во символов в строке " | "
-        writer.write("-$mult" + " ".repeat(digitNumber(lhv) + 3 - digitNumber(mult)) + divStr + '\n')
-    else // Число 2 в строке ниже -- кол-во символов в строке "-d", где d -- цифра; 3 -- в строке " | "
-        writer.write(" ".repeat(digitNumber(lhv) - 2) + "-$mult" + " ".repeat(3) + divStr + '\n')
-
-    // Выведем 3 строку.
-    if (goodNumbers)
-        writer.write("-".repeat(digitNumber(mult) + 1) + '\n')
-    else
-        writer.write("-".repeat(digitNumber(lhv)) + '\n')
-
-    // Выведем все остальные строки, кроме последней.
-    for (i in 1 until divStr.length) {
-        mod -= mult
-        if (digitNumber(mult) - digitNumber(mod) > 0)
-            margin += digitNumber(mult) - digitNumber(mod)
-
-        val modWasZero = mod == 0
-
-        writer.write(" ".repeat(margin + (mod)) + mod.toString())
-        mod = mod * 10 + (lhv.toString()[margin + digitNumber(mod) - 1] - '0')
-        writer.write((mod % 10).toString() + '\n')
-
-        if (modWasZero)
-            margin++
-
-        mult = (divStr[i] - '0') * rhv
-        val sameLength = digitNumber(mult) == digitNumber(mod)
-
-        if (sameLength)
-            writer.write(" ".repeat(margin - 1))
-        else
-            writer.write(" ".repeat(margin))
-        writer.write("-$mult\n")
-
-        if (sameLength) {
-            writer.write(" ".repeat(margin - 1))
-            writer.write("-".repeat(digitNumber(mod) + 1))
-        } else {
-            writer.write(" ".repeat(margin))
-            writer.write("-".repeat(digitNumber(mod)))
-        }
-
-        writer.newLine()
-    }
-
-    // Выведем последнюю строку.
-    val finalMargin =
-        if (goodNumbers)
-            margin + digitNumber(mult) - digitNumber(mod - mult)
-        else 0
-    writer.write(" ".repeat(finalMargin) + (lhv % rhv).toString())
-
-    writer.close()
+    TODO()
 }
 
