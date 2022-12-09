@@ -123,7 +123,14 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    TODO()
+    val linesClear = File(inputName).readLines().map { line ->
+        line.dropWhile { it == ' ' }
+            .dropLastWhile { it == ' ' }
+    }
+    val maxLength = linesClear.maxOfOrNull { it.length } ?: 0
+    File(outputName).bufferedWriter().use { writer ->
+        linesClear.forEach { writer.write(" ".repeat((maxLength - it.length) / 2) + it + '\n') }
+    }
 }
 
 /**
@@ -154,7 +161,31 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    TODO()
+    val linesClear = File(inputName).readLines().map { line ->
+        line.dropWhile { it == ' ' }
+            .dropLastWhile { it == ' ' }
+            .replace(Regex(" {2,}"), " ")
+    }
+    val maxLength = linesClear.maxOfOrNull { it.length } ?: 0
+    val writer = File(outputName).bufferedWriter()
+    linesClear.forEach { line ->
+        val words = line.split(' ')
+        if (words.size < 2)
+            writer.write(line)
+        else {
+            val totalSpaces = maxLength - line.count { it != ' ' } // Кол-во пробелов между всеми словами
+            val defaultSpaces = totalSpaces / (words.size - 1) // Кол-во пробелов между двумя последними словами
+            val additionalSpaces = totalSpaces % (words.size - 1)
+            for (i in 0 until words.lastIndex) {
+                writer.write(words[i] + " ".repeat(defaultSpaces))
+                if (i < additionalSpaces)
+                    writer.write(" ")
+            }
+            writer.write(words.last())
+        }
+        writer.newLine()
+    }
+    writer.close()
 }
 
 /**
