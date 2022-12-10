@@ -174,12 +174,12 @@ class Line private constructor(val b: Double, val angle: Double) {
 
             angle == 0.0 -> {
                 y = b
-                x = -other.b / sin(other.angle)
+                x = (b * cos(other.angle) - other.b) / sin(other.angle)
             }
 
             other.angle == 0.0 -> {
                 y = other.b
-                x = -b / sin(angle)
+                x = (other.b * cos(angle) - b) / sin(angle)
             }
 
             else -> {
@@ -214,7 +214,7 @@ fun lineBySegment(s: Segment): Line = when {
         Line(s.begin, PI / 2)
 
     else ->
-        Line(s.begin, atan((s.end.y - s.begin.y) / (s.end.x - s.begin.x)))
+        Line(s.begin, (atan((s.end.y - s.begin.y) / (s.end.x - s.begin.x)) + PI) % PI)
 }
 
 /**
@@ -235,7 +235,9 @@ fun bisectorByPoints(a: Point, b: Point): Line {
     return when {
         segmentSlope.isInfinite() -> Line(middle, 0.0)
         segmentSlope == 0.0 -> Line(middle, PI / 2)
-        segmentSlope > 0.0 -> Line(middle, atan(-1 / segmentSlope) + PI)
+        // "% PI" в строке ниже предотвращает передачу аргументом числа, округлённого до PI,
+        // в том случае, когда segmentSlope имеет очень большое значение
+        segmentSlope > 0.0 -> Line(middle, (atan(-1 / segmentSlope) + PI) % PI)
         else -> Line(middle, atan(-1 / segmentSlope))
     }
 }

@@ -174,6 +174,13 @@ class Tests {
     @Tag("3")
     fun crossPoint() {
         assertApproxEquals(
+            Point(-0.049701533981606344, 0.17377441261885074),
+            Line(Point(0.0, 0.17377441261885074), 0.0).crossPoint(
+                Line(Point(0.0, 0.2079920930787296), 0.6029411537570986)
+            ),
+            1e-5
+        )
+        assertApproxEquals(
             Point(2.0, 3.0),
             Line(Point(2.0, 0.0), PI / 2).crossPoint(
                 Line(Point(0.0, 3.0), 0.0)
@@ -187,12 +194,11 @@ class Tests {
             ),
             1e-5
         )
-
-        val p = Point(1.0, 3.0)
-
         assertApproxEquals(
-            p,
-            Line(p, 1.0).crossPoint(Line(p, 2.0)),
+            Point(1.0, 3.0),
+            Line(Point(1.0, 3.0), 1.0).crossPoint(
+                Line(Point(1.0, 3.0), 2.0)
+            ),
             1e-5
         )
     }
@@ -219,6 +225,10 @@ class Tests {
         assertApproxEquals(Line(Point(1.0, 2.0), 0.0), bisectorByPoints(Point(1.0, 5.0), Point(1.0, -1.0)))
         assertApproxEquals(Line(Point(3.0, 3.0), 3 * PI / 4), bisectorByPoints(Point(1.0, 1.0), Point(5.0, 5.0)))
         assertApproxEquals(Line(Point(3.0, 3.0), PI / 4), bisectorByPoints(Point(1.0, 5.0), Point(5.0, 1.0)))
+        assertApproxEquals(
+            Line(Segment(Point(4.9E-324, -4.9E-324), Point(-2.220446049250313e-16, -632.0)).middle, 0.0),
+            bisectorByPoints(Point(4.9E-324, -4.9E-324), Point(-2.220446049250313e-16, -632.0))
+        )
     }
 
     @Test
