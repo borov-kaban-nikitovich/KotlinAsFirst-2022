@@ -99,7 +99,7 @@ data class Circle(val center: Point, val radius: Double) {
 data class Segment(val begin: Point, val end: Point) {
     val length = begin.distance(end)
     val middle = Point((begin.x + end.x) / 2, (begin.y + end.y) / 2)
-    val slope = when {
+    fun findSlope() = when {
         begin == end -> throw IllegalArgumentException("Degenerate segment may have any slope")
         begin.x == end.x -> Double.POSITIVE_INFINITY
         else -> (end.y - begin.y) / (end.x - begin.x)
@@ -230,7 +230,7 @@ fun lineByPoints(a: Point, b: Point): Line = lineBySegment(Segment(a, b))
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
 fun bisectorByPoints(a: Point, b: Point): Line {
-    val segmentSlope = Segment(a, b).slope
+    val segmentSlope = Segment(a, b).findSlope()
     val middle = Segment(a, b).middle
     return when {
         segmentSlope.isInfinite() -> Line(middle, 0.0)
