@@ -554,6 +554,106 @@ fun printMultiplicationProcess(lhv: Int, rhv: Int, outputName: String) {
  *
  */
 fun printDivisionProcess(lhv: Int, rhv: Int, outputName: String) {
-    TODO()
-}
+    // 1) Обработаем 3 первых строки
+    val quotient = lhv / rhv // Частное без остатка
 
+    // 1.1) Вычислим вычитаемое и уменьшаемое
+    var subtrahend = quotient.toString().take(1).toInt() * rhv // Вычитаемое (пример: x - subtrahend)
+    var minuend = 0 // Уменьшаемое (пример: minuend - x)
+
+    // Если subtrahend != 0, то берём НАИМЕНЬШИЙ возможный minuend
+    if (subtrahend != 0)
+        for (digit in lhv.toString().map { it.digitToInt() }) {
+            minuend = minuend * 10 + digit
+            if (minuend >= subtrahend)
+                break
+        }
+    // Если subtrahend == 0, то берём НАИБОЛЬШИЙ возможный minuend
+    else minuend = lhv
+
+    // 1.2) Введём переменный отступ и длину последний индекс lhv, пошедший в minuend
+    var margin = 0 // Отступ, накапливающийся в процессе сдвига чисел вправо
+    // Эта величина понадобится на 2 этапе для того, чтобы правильно считывать следующий разряд из lhv:
+    val startIndex = digitNumber(minuend) - 1
+
+    // 1.3) Выведем первые 3 строки
+    val writer = File(outputName).bufferedWriter()
+    if (digitNumber(subtrahend) == digitNumber(minuend)) {
+        writer.write(" $lhv | $rhv\n") // Требуется первый пробел над минусом
+        margin += 1 // Тот самый пробел над минусом
+        // В строке ниже 3 для " | "
+        writer.write("-$subtrahend" + " ".repeat(digitNumber(lhv) - digitNumber(subtrahend) + 3) + "$quotient\n")
+        writer.write("-".repeat(1 + digitNumber(subtrahend))) // 1 дефис ставим под минус
+    }
+    // Уменьшаемое длиннее вычитаемого => минус слева не выпирает
+    else {
+        writer.write("$lhv | $rhv\n") // Первого пробела над минусом не требуется
+        // Требуется сдвинуть выражение "-$subtrahend" к младшему разряду minuend
+        val spacesBeforeSubtrahend = digitNumber(minuend) - (1 + digitNumber(subtrahend)) // 1 для минуса
+        writer.write(
+            " ".repeat(spacesBeforeSubtrahend) + "-$subtrahend" +
+                    " ".repeat(digitNumber(lhv) - digitNumber(minuend) + 3) +
+                    "$quotient\n"
+        )
+        writer.write("-".repeat(digitNumber(minuend)))
+    }
+    writer.newLine()
+
+    // 1.4) Найдём разность, которая станет предыдущей для первой итерации цикла
+    var prevDifference = minuend
+
+    // 2) Циклически выведем все остальные строки, кроме последней
+    for (i in 1 until digitNumber(quotient)) {
+        // Найдём разность _предыдущих_ уменьшаемого и вычитаемого
+        val difference = minuend - subtrahend
+
+        // Вычислим отступ перед _новым_ уменьшаемым на основе предыдущего отступа, который остаётся неизменным
+        /** Примечание: margin на 1 больше, когда предыдущая разность была равна 0, т.к. **\
+        \** фактически на предыдущем шаге было выведено 2 цифры, первая из которых -- 0  **/
+        margin +=
+            if (prevDifference == 0) 1
+            else digitNumber(minuend) - digitNumber(difference)
+
+        // Возьмём следующий разряд из lhv, чтобы приписать его справа к разности
+        val nextDigit = lhv.toString()[startIndex + i].digitToInt()
+
+        // ВЫВЕДЕМ новое уменьшаемое до его вычисления
+        // (так мы сможем сделать вывод правильным в случае, если difference = 0)
+        writer.write(" ".repeat(margin) + "$difference$nextDigit\n")
+
+        // Вычислим новые уменьшаемое и вычитаемое
+        minuend = difference * 10 + nextDigit
+        subtrahend = quotient.toString()[i].digitToInt() * rhv
+
+        // Вычислим кол-во пробелов перед выражением "-$subtrahend" ОТНОСИТЕЛЬНО minuend
+        /**  Примечание: эта величина на 1 больше, **\
+        \** если на этой итерации разность равна 0 **/
+        var spacesBeforeSubtrahend =
+            if (digitNumber(minuend) == digitNumber(subtrahend))
+                -1 // Так мы компенсируем margin в случае, если разрядов в уменьшаемом и вычитаемом поровну
+            else
+                digitNumber(minuend) - (1 + digitNumber(subtrahend)) // 1 для минуса
+        if (difference == 0) spacesBeforeSubtrahend += 1
+
+        // ВЫВЕДЕМ новое вычитаемое
+        writer.write(" ".repeat(margin + spacesBeforeSubtrahend) + "-$subtrahend\n")
+
+        // ВЫВЕДЕМ подчёркивание
+        if (digitNumber(minuend) == digitNumber(subtrahend))
+            writer.write(" ".repeat(margin + spacesBeforeSubtrahend) + "-".repeat(1 + digitNumber(subtrahend)))
+        else
+            writer.write(" ".repeat(margin) + "-".repeat(digitNumber(minuend)))
+        writer.newLine()
+
+        // Текущая разность становится прошлой разностью для следующей итерации
+        prevDifference = difference
+    }
+
+    // 3) Выведем последнюю строку
+    margin +=
+        if (prevDifference == 0) 1
+        else digitNumber(minuend) - digitNumber(lhv % rhv)
+    writer.write(" ".repeat(margin) + "${lhv % rhv}")
+
+    writer.close()
+}

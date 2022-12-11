@@ -381,19 +381,31 @@ Basic, Ruby, Swift.
     @Test
     @Tag("25")
     fun printDivisionProcess() {
-
         fun test(lhv: Int, rhv: Int, res: String) {
             printDivisionProcess(lhv, rhv, "temp.txt")
             assertFileContent("temp.txt", res.trimIndent())
             File("temp.txt").delete()
         }
-
         test(
-            872855,
-            5123,
-            " 872855 | 5123\n-5123     170\n-----\n 36055\n-35861\n------\n   1945\n     -0\n   ----\n   1945"
+            100,
+            100,
+            """
+             100 | 100
+            -100   1
+            ----
+               0
+             """
         )
-
+        test(
+            100,
+            99,
+            """
+             100 | 99
+             -99   1
+             ---
+               1
+             """
+        )
         test(
             100,
             1000,
@@ -404,7 +416,6 @@ Basic, Ruby, Swift.
              100
              """
         )
-
         test(
             2,
             3,
@@ -415,7 +426,6 @@ Basic, Ruby, Swift.
               2
              """
         )
-
         test(
             19935,
             22,
@@ -432,7 +442,6 @@ Basic, Ruby, Swift.
                   3
              """
         )
-
         test(
             2,
             20,
@@ -443,7 +452,6 @@ Basic, Ruby, Swift.
               2
              """
         )
-
         test(
             99999,
             1,
@@ -465,6 +473,11 @@ Basic, Ruby, Swift.
                  --
                   0
              """
+        )
+        test(
+            872855,
+            5123,
+            " 872855 | 5123\n-5123     170\n-----\n 36055\n-35861\n------\n   1945\n     -0\n   ----\n   1945"
         )
         File("temp.txt").delete()
     }
