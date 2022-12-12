@@ -234,6 +234,17 @@ class Tests {
     @Test
     @Tag("3")
     fun findNearestCirclePair() {
+        assertEquals(
+            Pair(
+                Circle(Point(-632.0, 4.9E-324), 0.1),
+                Circle(Point(-0.10691353959493122, 4.9E-324), 0.8795229088826655)
+            ),
+            findNearestCirclePair(
+                Circle(Point(-632.0, 4.9E-324), 0.1),
+                Circle(Point(-632.0, 4.9E-324), 0.1),
+                Circle(Point(-0.10691353959493122, 4.9E-324), 0.8795229088826655)
+            )
+        )
         val c1 = Circle(Point(0.0, 0.0), 1.0)
         val c2 = Circle(Point(3.0, 0.0), 5.0)
         val c3 = Circle(Point(-5.0, 0.0), 2.0)
@@ -277,5 +288,17 @@ class Tests {
         for (p in listOf(a, b, c, d)) {
             assertTrue(result2.contains(p))
         }
+//        // Ещё один тест
+//        val x1 = Point(0.15892485585785332, -632.0)
+//        val x2 = Point(0.0948747120869774, -632.0)
+//        val x3 = Point(0.40029462782204217, 0.09223203045819006)
+//        val x4 = Point(-632.0, 2.220446049250313e-16)
+//        val x5 = Point(0.8961025483995969, 0.9595772300686115)
+//        val x6 = Point(0.6289045318040875, 0.2310915814417227)
+//        val result3 = minContainingCircle(x1, x2, x3, x4, x5, x6)
+//        assertEquals(446.9492837279577, result3.radius, 0.01)
+//        for (x in listOf(x1, x2, x3, x4, x5, x6)) {
+//            assertTrue(result3.contains(x))
+//        }
     }
 }

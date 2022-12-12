@@ -91,6 +91,14 @@ data class Circle(val center: Point, val radius: Double) {
      * Вернуть true, если и только если окружность содержит данную точку НА себе или ВНУТРИ себя
      */
     fun contains(p: Point): Boolean = center.distance(p) <= radius
+
+    override fun equals(other: Any?) = other is Circle && radius == other.radius && center == other.center
+
+    override fun hashCode(): Int {
+        var result = center.hashCode()
+        result = 31 * result + radius.hashCode()
+        return result
+    }
 }
 
 /**
@@ -99,11 +107,6 @@ data class Circle(val center: Point, val radius: Double) {
 data class Segment(val begin: Point, val end: Point) {
     val length = begin.distance(end)
     val middle = Point((begin.x + end.x) / 2, (begin.y + end.y) / 2)
-    fun findSlope() = when {
-        begin == end -> throw IllegalArgumentException("Degenerate segment may have any slope")
-        begin.x == end.x -> Double.POSITIVE_INFINITY
-        else -> (end.y - begin.y) / (end.x - begin.x)
-    }
 
     override fun equals(other: Any?) =
         other is Segment && (begin == other.begin && end == other.end || end == other.begin && begin == other.end)
@@ -230,10 +233,9 @@ fun lineByPoints(a: Point, b: Point): Line = lineBySegment(Segment(a, b))
  * Построить серединный перпендикуляр по отрезку или по двум точкам
  */
 fun bisectorByPoints(a: Point, b: Point): Line {
-    val segmentSlope = Segment(a, b).findSlope()
+    val segmentSlope = tan(lineBySegment(Segment(a, b)).angle)
     val middle = Segment(a, b).middle
     return when {
-        segmentSlope.isInfinite() -> Line(middle, 0.0)
         segmentSlope == 0.0 -> Line(middle, PI / 2)
         // "% PI" в строке ниже предотвращает передачу аргументом числа, округлённого до PI,
         // в том случае, когда segmentSlope имеет очень большое значение
@@ -255,13 +257,17 @@ fun bisectorByPoints(a: Point, b: Point): Line {
  * Если в списке менее двух окружностей, бросить IllegalArgumentException
  */
 fun findNearestCirclePair(vararg circles: Circle): Pair<Circle, Circle> {
-    if (circles.size < 2)
-        throw IllegalArgumentException("At least 2 circles required")
-    var leastDistantCircles = Pair(circles[0], circles[1])
-    for (i in circles.indices)
+    if (circles.toSet().size < 2)
+        throw IllegalArgumentException("At least 2 unique circles required")
+    var leastDistantCircles = Pair(
+        Circle(Point(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY), 0.0),
+        Circle(Point(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY), 0.0),
+    )
+    for (i in circles.toList().indices)
         for (j in i + 1..circles.lastIndex)
-            if (leastDistantCircles.first.distance(leastDistantCircles.second) > circles[i].distance(circles[j]))
-                leastDistantCircles = Pair(circles[i], circles[j])
+            if (circles[i] != circles[j])
+                if (leastDistantCircles.first.distance(leastDistantCircles.second) > circles[i].distance(circles[j]))
+                    leastDistantCircles = Pair(circles[i], circles[j])
     return leastDistantCircles
 }
 
@@ -281,7 +287,7 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
     val ac = a.distance(c)
     val s = Triangle(a, b, c).area()
     val r = ab / 4 * bc / s * ac // Порядок изменён для предотвращения переполнения
-    // Вычислим центр координатным методом
+    // Вычислим центр координатным методом (материал из Википедии)
     val d = 2 * (a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y))
     val ux = ((sqr(a.x) + sqr(a.y)) * (b.y - c.y) +
             (sqr(b.x) + sqr(b.y)) * (c.y - a.y) +
@@ -309,8 +315,9 @@ fun minContainingCircle(vararg points: Point): Circle {
     if (points.size == 1)
         return Circle(points[0], 0.0)
     val diameter = diameter(*points)
-    // Окружность, которая точно содержит все точки множества:
-    var minCircle = Circle(diameter.middle, diameter.length * 10)
+    // Окружность, построенная на отрезке между самыми удалёнными точками
+    // множества, как на радиусе, точно содержит все точки множества
+    var minCircle = Circle(diameter.begin, diameter.length)
     for (i in points.indices)
         for (j in i + 1..points.lastIndex)
             for (k in j + 1..points.lastIndex) {
@@ -323,4 +330,3 @@ fun minContainingCircle(vararg points: Point): Circle {
         minCircle = circleByTwoPoints
     return minCircle
 }
-
