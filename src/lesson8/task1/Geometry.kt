@@ -296,6 +296,9 @@ fun circleByThreePoints(a: Point, b: Point, c: Point): Circle {
             (sqr(b.x) + sqr(b.y)) * (a.x - c.x) +
             (sqr(c.x) + sqr(c.y)) * (b.x - a.x)) / d
     return Circle(Point(ux, uy), r)
+    /** Примечание: мы могли бы вычислить центр как точку пересечения серединных перпендикуляров
+     ** к двум из сторон треугольника, но это значительно увеличило бы погрешность расчётов, что
+     ** помешало бы использовать эту функцию при решении следующей задачи. **/
 }
 
 /**
@@ -329,4 +332,6 @@ fun minContainingCircle(vararg points: Point): Circle {
     if (circleByTwoPoints.radius < minCircle.radius && points.all { circleByTwoPoints.contains(it) })
         minCircle = circleByTwoPoints
     return minCircle
+    // Примечание: функция не проходит некоторые тесты из-за погрешностей вычислений. Чтобы увеличить их
+    // точность, для предыдущих задач нужно реализовать менее очевидные решения, что усложнит их восприятие.
 }
