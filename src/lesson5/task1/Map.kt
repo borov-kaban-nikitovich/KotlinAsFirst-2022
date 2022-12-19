@@ -2,9 +2,6 @@
 
 package lesson5.task1
 
-import java.lang.Integer.max
-import java.lang.Integer.min
-
 // Урок 5: ассоциативные массивы и множества
 // Максимальное количество баллов = 14
 // Рекомендуемое количество баллов = 9
@@ -327,21 +324,14 @@ fun propagateHandshakes(friends: Map<String, Set<String>>): Map<String, Set<Stri
  *   findSumOfTwo(listOf(1, 2, 3), 6) -> Pair(-1, -1)
  */
 fun findSumOfTwo(list: List<Int>, number: Int): Pair<Int, Int> {
-    // По моим подсчётам, сложность алгоритма О(N*(logN + 1)) против O(N^2)
-    val known = mutableSetOf<Int>()
-    var first = -1
-    var second = -1
-    for (i in list.indices) { // N операций
-        if (number - list[i] in known) { // * logN операций, т.к. поиск по множеству
-            first = i
-            for (j in list.indices) // + N операций
-                if (list[j] == number - list[i] && i != j)
-                    second = j
-            break
-        }
-        known.add(list[i])
+    val known = mutableMapOf<Int, Int>() // Число и его индекс
+    for (i in list.indices) {
+        val other = number - list[i]
+        if (other in known)
+            return known[other]!! to i // Индекс известного точно меньше индекса текущего
+        known[list[i]] = i
     }
-    return min(first, second) to max(first, second)
+    return -1 to -1
 }
 
 /**

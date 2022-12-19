@@ -4,6 +4,7 @@ package lesson7.task1
 
 import java.io.File
 import lesson3.task1.digitNumber
+import java.lang.Integer.max
 import java.lang.StringBuilder
 
 
@@ -123,13 +124,16 @@ fun sibilants(inputName: String, outputName: String) {
  *
  */
 fun centerFile(inputName: String, outputName: String) {
-    val linesClear = File(inputName).readLines().map { line ->
-        line.dropWhile { it == ' ' }
-            .dropLastWhile { it == ' ' }
+    var maxLength = 0
+    File(inputName).bufferedReader().forEachLine { line ->
+        val clearLineLength = line.dropWhile { it == ' ' }.dropLastWhile { it == ' ' }.length
+        maxLength = max(clearLineLength, maxLength)
     }
-    val maxLength = linesClear.maxOfOrNull { it.length } ?: 0
     File(outputName).bufferedWriter().use { writer ->
-        linesClear.forEach { writer.write(" ".repeat((maxLength - it.length) / 2) + it + '\n') }
+        File(inputName).bufferedReader().forEachLine { line ->
+            val clearLine = line.dropWhile { it == ' ' }.dropLastWhile { it == ' ' }
+            writer.write(" ".repeat((maxLength - clearLine.length) / 2) + clearLine + '\n')
+        }
     }
 }
 
@@ -161,31 +165,39 @@ fun centerFile(inputName: String, outputName: String) {
  * 8) Если входной файл удовлетворяет требованиям 1-7, то он должен быть в точности идентичен выходному файлу
  */
 fun alignFileByWidth(inputName: String, outputName: String) {
-    val linesClear = File(inputName).readLines().map { line ->
-        line.dropWhile { it == ' ' }
+    var maxLength = 0
+    File(inputName).bufferedReader().forEachLine { line ->
+        val clearLineLength = line
+            .dropWhile { it == ' ' }
             .dropLastWhile { it == ' ' }
             .replace(Regex(" {2,}"), " ")
+            .length
+        maxLength = max(clearLineLength, maxLength)
     }
-    val maxLength = linesClear.maxOfOrNull { it.length } ?: 0
-    val writer = File(outputName).bufferedWriter()
-    linesClear.forEach { line ->
-        val words = line.split(' ')
-        if (words.size < 2)
-            writer.write(line)
-        else {
-            val totalSpaces = maxLength - line.count { it != ' ' } // Кол-во пробелов между всеми словами
-            val defaultSpaces = totalSpaces / (words.size - 1) // Кол-во пробелов между двумя последними словами
-            val additionalSpaces = totalSpaces % (words.size - 1)
-            for (i in 0 until words.lastIndex) {
-                writer.write(words[i] + " ".repeat(defaultSpaces))
-                if (i < additionalSpaces)
-                    writer.write(" ")
+    File(outputName).bufferedWriter().use { writer ->
+        File(inputName).bufferedReader().forEachLine { line ->
+            val clearLine = line
+                .dropWhile { it == ' ' }
+                .dropLastWhile { it == ' ' }
+                .replace(Regex(" {2,}"), " ")
+            val words = clearLine.split(' ')
+            if (words.size < 2)
+                writer.write(clearLine)
+            else {
+                val totalSpaces = maxLength - clearLine.count { it != ' ' } // Кол-во пробелов между всеми словами
+                val defaultSpaces = totalSpaces / (words.size - 1) // Кол-во пробелов между двумя последними словами
+                val additionalSpaces = totalSpaces % (words.size - 1)
+                for (i in 0 until words.lastIndex) {
+                    writer.write(words[i] + " ".repeat(defaultSpaces))
+                    if (i < additionalSpaces)
+                        writer.write(" ")
+                }
+                writer.write(words.last())
             }
-            writer.write(words.last())
+            writer.newLine()
         }
-        writer.newLine()
+        writer.close()
     }
-    writer.close()
 }
 
 /**

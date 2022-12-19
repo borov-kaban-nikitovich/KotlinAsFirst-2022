@@ -11,19 +11,19 @@ import java.lang.Integer.max
 // Рекомендуемое количество баллов = 11
 // Вместе с предыдущими уроками (пять лучших, 2-6) = 40/54
 
-private val MONTHS = listOf(
-    "января",
-    "февраля",
-    "марта",
-    "апреля",
-    "мая",
-    "июня",
-    "июля",
-    "августа",
-    "сентября",
-    "октября",
-    "ноября",
-    "декабря"
+private val MONTHS = mapOf(
+    "января" to 1,
+    "февраля" to 2,
+    "марта" to 3,
+    "апреля" to 4,
+    "мая" to 5,
+    "июня" to 6,
+    "июля" to 7,
+    "августа" to 8,
+    "сентября" to 9,
+    "октября" to 10,
+    "ноября" to 11,
+    "декабря" to 12
 )
 private val ARABICNUMBERS = mapOf(
     "M" to 1000,
@@ -111,11 +111,9 @@ fun dateStrToDigit(str: String): String {
     val parts = str.split(" ")
     if (parts.size != 3)
         return ""
-    if (parts[1] !in MONTHS)
-        return ""
     val day = parts[0].toIntOrNull() ?: return ""
     val monthStr = parts[1]
-    val month = MONTHS.indexOf(monthStr) + 1
+    val month = MONTHS[monthStr] ?: return ""
     val year = parts[2].toIntOrNull() ?: return ""
     if (day !in 1..daysInMonth(month, year))
         return ""
@@ -141,7 +139,7 @@ fun dateDigitToStr(digital: String): String {
         return ""
     if (day !in 1..daysInMonth(month, year))
         return ""
-    return "$day ${MONTHS[month - 1]} $year"
+    return "$day ${MONTHS.map { it.value to it.key }.toMap()[month]} $year"
 }
 
 /**
@@ -363,7 +361,7 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
     // Проверим соответствие строки commands шаблону
     var openBracketCount = 0
     var closeBracketCount = 0
-    for (command in commands)
+    for (command in commands) {
         when (command) {
             '[' -> openBracketCount++
             ']' -> {
@@ -374,6 +372,9 @@ fun computeDeviceCells(cells: Int, commands: String, limit: Int): List<Int> {
 
             !in "+-<>[] " -> throw IllegalArgumentException()
         }
+        if (openBracketCount < closeBracketCount)
+            throw IllegalArgumentException()
+    }
     if (openBracketCount != closeBracketCount)
         throw IllegalArgumentException()
 
